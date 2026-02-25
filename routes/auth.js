@@ -34,11 +34,11 @@ router.post("/send-otp", async (req, res) => {
       {
         sender: {
           name: "VELOOP Rewards",
-          email: "velooprewardsteam@gmail.com",
+          email: process.env.BREVO_USER,
         },
         to: [{ email }],
         subject: "VELOOP OTP Verification",
-        htmlContent: `<h2>Your OTP is ${otp}</h2><p>Valid for 5 minutes</p>`,
+        htmlContent: `<h2>Your OTP is ${otp}</h2>`,
       },
       {
         headers: {
