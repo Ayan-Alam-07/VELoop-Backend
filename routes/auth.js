@@ -34,7 +34,7 @@ router.post("/send-otp", async (req, res) => {
       {
         sender: {
           name: "VELOOP Rewards",
-          email: "infosys316@gmail.com",
+          email: "velooprewardsteam@gmail.com",
         },
         to: [{ email }],
         subject: "VELOOP OTP Verification",
@@ -51,7 +51,9 @@ router.post("/send-otp", async (req, res) => {
     res.json({ message: "OTP sent successfully" });
   } catch (error) {
     console.error("BREVO ERROR:", error.response?.data || error.message);
-    res.status(500).json("OTP sending failed");
+    res
+      .status(500)
+      .json("OTP sending failed, Try SignIn using Google Or Try after a hour");
   }
 });
 // ======================
