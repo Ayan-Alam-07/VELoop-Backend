@@ -9,48 +9,51 @@ const generateUniqueIds = require("../utils/idGenerator");
 
 const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
-// const transporter = nodemailer.createTransport({
-//   service: "gmail",
-//   auth: {
-//     user: process.env.EMAIL_USER,
-//     pass: process.env.EMAIL_PASS,
-//   },
-// });
-
-// 🔹 Brevo Transporter
-const transporter = nodemailer.createTransport({
-  host: "smtp-relay.brevo.com",
-  port: 587,
-  secure: false,
-  auth: {
-    user: process.env.BREVO_USER,
-    pass: process.env.BREVO_PASS,
-  },
-});
-
 // ======================
 // 🔥 SEND OTP
 // ======================
+const axios = require("axios");
+
 router.post("/send-otp", async (req, res) => {
-  const { email } = req.body;
+  try {
+    const { email } = req.body;
 
-  const otp = Math.floor(1000 + Math.random() * 9000).toString();
+    if (!email) {
+      return res.status(400).json("Email required");
+    }
 
-  otpStore[email] = {
-    code: otp,
-    expires: Date.now() + 5 * 60 * 1000,
-  };
+    const otp = Math.floor(1000 + Math.random() * 9000).toString();
 
-  await transporter.sendMail({
-    from: process.env.EMAIL_USER,
-    to: email,
-    subject: "VELOOP OTP Verification",
-    html: `<h2>Your OTP is ${otp}</h2><p>Valid for 5 minutes</p>`,
-  });
+    otpStore[email] = {
+      code: otp,
+      expires: Date.now() + 5 * 60 * 1000,
+    };
 
-  res.json({ message: "OTP sent" });
+    await axios.post(
+      "https://api.brevo.com/v3/smtp/email",
+      {
+        sender: {
+          name: "VELOOP Rewards",
+          email: "infosys316@gmail.com",
+        },
+        to: [{ email }],
+        subject: "VELOOP OTP Verification",
+        htmlContent: `<h2>Your OTP is ${otp}</h2><p>Valid for 5 minutes</p>`,
+      },
+      {
+        headers: {
+          "api-key": process.env.BREVO_API_KEY,
+          "Content-Type": "application/json",
+        },
+      },
+    );
+
+    res.json({ message: "OTP sent successfully" });
+  } catch (error) {
+    console.error("BREVO ERROR:", error.response?.data || error.message);
+    res.status(500).json("OTP sending failed");
+  }
 });
-
 // ======================
 // 🔥 REGISTER (Email + OTP)
 // ======================
