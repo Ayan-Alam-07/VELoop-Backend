@@ -3,29 +3,11 @@ const User = require("../models/User");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const nodemailer = require("nodemailer");
+const { OAuth2Client } = require("google-auth-library");
 const otpStore = require("../utils/otpStore");
+const generateUniqueIds = require("../utils/idGenerator");
 
-// 🔹 Generate userId aaa1111a
-function generateUserId() {
-  const letters = "abcdefghijklmnopqrstuvwxyz";
-  const numbers = "0123456789";
-
-  let id = "";
-  for (let i = 0; i < 3; i++)
-    id += letters[Math.floor(Math.random() * letters.length)];
-
-  for (let i = 0; i < 4; i++)
-    id += numbers[Math.floor(Math.random() * numbers.length)];
-
-  id += letters[Math.floor(Math.random() * letters.length)];
-
-  return id;
-}
-
-// 🔹 Generate 8 digit referral code
-function generateReferralCode() {
-  return Math.floor(10000000 + Math.random() * 90000000).toString();
-}
+const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 // 🔹 Email Transporter
 const transporter = nodemailer.createTransport({
@@ -36,32 +18,32 @@ const transporter = nodemailer.createTransport({
   },
 });
 
-// 🔥 SEND OTP TO EMAIL
+// ======================
+// 🔥 SEND OTP
+// ======================
 router.post("/send-otp", async (req, res) => {
-  try {
-    const { email } = req.body;
+  const { email } = req.body;
 
-    const otp = Math.floor(1000 + Math.random() * 9000).toString();
+  const otp = Math.floor(1000 + Math.random() * 9000).toString();
 
-    otpStore[email] = {
-      code: otp,
-      expires: Date.now() + 5 * 60 * 1000,
-    };
+  otpStore[email] = {
+    code: otp,
+    expires: Date.now() + 5 * 60 * 1000,
+  };
 
-    await transporter.sendMail({
-      from: process.env.EMAIL_USER,
-      to: email,
-      subject: "ADSeeN OTP Verification",
-      html: `<h2>Your OTP is ${otp}</h2><p>Valid for 5 minutes</p>`,
-    });
+  await transporter.sendMail({
+    from: process.env.EMAIL_USER,
+    to: email,
+    subject: "VELOOP OTP Verification",
+    html: `<h2>Your OTP is ${otp}</h2><p>Valid for 5 minutes</p>`,
+  });
 
-    res.json({ message: "OTP sent to email" });
-  } catch (err) {
-    res.status(500).json("OTP sending failed");
-  }
+  res.json({ message: "OTP sent" });
 });
 
-// 🔥 REGISTER
+// ======================
+// 🔥 REGISTER (Email + OTP)
+// ======================
 router.post("/register", async (req, res) => {
   try {
     const { email, password, otp, referralInput } = req.body;
@@ -76,19 +58,7 @@ router.post("/register", async (req, res) => {
 
     const hashed = await bcrypt.hash(password, 10);
 
-    let userId, referralCode;
-    let unique = false;
-
-    while (!unique) {
-      userId = generateUserId();
-      referralCode = generateReferralCode();
-
-      const exist = await User.findOne({
-        $or: [{ userId }, { referralCode }],
-      });
-
-      if (!exist) unique = true;
-    }
+    const { userId, referralCode } = await generateUniqueIds();
 
     const newUser = new User({
       userId,
@@ -96,9 +66,10 @@ router.post("/register", async (req, res) => {
       password: hashed,
       referralCode,
       coins: 0,
+      provider: "email",
     });
 
-    // 🎁 Handle Referral
+    // 🎁 Referral
     if (referralInput) {
       const referrer = await User.findOne({
         referralCode: referralInput,
@@ -106,18 +77,13 @@ router.post("/register", async (req, res) => {
 
       if (referrer) {
         referrer.coins += 137;
-
-        referrer.referrals.push({
-          userId: userId,
-        });
-
+        referrer.referrals.push({ userId });
         await referrer.save();
         newUser.referredBy = referrer.userId;
       }
     }
 
     await newUser.save();
-
     delete otpStore[email];
 
     res.json({ message: "Registered Successfully" });
@@ -126,7 +92,9 @@ router.post("/register", async (req, res) => {
   }
 });
 
-// 🔥 LOGIN (Email + Password)
+// ======================
+// 🔐 LOGIN (Email)
+// ======================
 router.post("/login", async (req, res) => {
   const { email, password } = req.body;
 
@@ -146,6 +114,66 @@ router.post("/login", async (req, res) => {
     coins: user.coins,
     referralCode: user.referralCode,
   });
+});
+
+// ======================
+// 🔵 GOOGLE LOGIN
+// ======================
+router.post("/google-login", async (req, res) => {
+  try {
+    const { token, referralInput } = req.body;
+
+    const ticket = await googleClient.verifyIdToken({
+      idToken: token,
+      audience: process.env.GOOGLE_CLIENT_ID,
+    });
+
+    const payload = ticket.getPayload();
+    const email = payload.email;
+
+    let user = await User.findOne({ email });
+
+    if (!user) {
+      const { userId, referralCode } = await generateUniqueIds();
+
+      user = new User({
+        userId,
+        email,
+        password: "google-auth",
+        referralCode,
+        coins: 0,
+        provider: "google",
+      });
+
+      if (referralInput) {
+        const referrer = await User.findOne({
+          referralCode: referralInput,
+        });
+
+        if (referrer) {
+          referrer.coins += 137;
+          referrer.referrals.push({ userId });
+          await referrer.save();
+          user.referredBy = referrer.userId;
+        }
+      }
+
+      await user.save();
+    }
+
+    const jwtToken = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
+      expiresIn: "7d",
+    });
+
+    res.json({
+      token: jwtToken,
+      userId: user.userId,
+      coins: user.coins,
+      referralCode: user.referralCode,
+    });
+  } catch (err) {
+    res.status(400).json("Google login failed");
+  }
 });
 
 module.exports = router;
