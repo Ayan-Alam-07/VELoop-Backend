@@ -22,18 +22,46 @@ router.post("/send-otp", async (req, res) => {
       return res.status(400).json("Email required");
     }
 
-    // 🔴 Check if user already exists
-    const existingUser = await User.findOne({ email });
+    let user = await User.findOne({ email });
 
-    if (existingUser) {
+    // 🔒 LOCK CHECK
+    if (user && user.lockUntil && user.lockUntil > Date.now()) {
+      return res.status(403).json({
+        message: "Account locked for 24 hours",
+        lockUntil: user.lockUntil,
+      });
+    }
+
+    // 🚫 BLOCK IF ALREADY REGISTERED
+    if (user) {
       return res.status(400).json("User already registered. Please login.");
     }
+
+    // 🔥 RATE LIMIT: Max 3 OTP per 10 minutes
+    const now = Date.now();
+
+    if (!user) {
+      user = new User({ email }); // temp doc for rate tracking
+    }
+
+    if (user.otpRequestWindow && now - user.otpRequestWindow < 10 * 60 * 1000) {
+      if (user.otpRequestCount >= 3) {
+        return res.status(429).json("Too many OTP requests. Try later.");
+      }
+      user.otpRequestCount += 1;
+    } else {
+      user.otpRequestCount = 1;
+      user.otpRequestWindow = now;
+    }
+
+    await user.save();
 
     const otp = Math.floor(1000 + Math.random() * 9000).toString();
 
     otpStore[email] = {
       code: otp,
-      expires: Date.now() + 5 * 60 * 1000,
+      expires: now + 5 * 60 * 1000,
+      attempts: 0,
     };
 
     await axios.post(
@@ -44,7 +72,7 @@ router.post("/send-otp", async (req, res) => {
           email: process.env.BREVO_SENDER,
         },
         to: [{ email }],
-        subject: "VELOOP OTP Verification",
+        subject: "VELOOP Rewards OTP Verification",
         htmlContent: `<h2>Your OTP is ${otp}</h2>`,
       },
       {
@@ -57,10 +85,11 @@ router.post("/send-otp", async (req, res) => {
 
     res.json({ message: "OTP sent successfully" });
   } catch (error) {
-    console.error("BREVO ERROR:", error.response?.data || error.message);
-    res.status(500).json("OTP sending failed");
+    console.error(error);
+    res.status(500).json("OTP failed");
   }
 });
+
 // ======================
 // 🔥 REGISTER (Email + OTP)
 // ======================
@@ -76,13 +105,37 @@ router.post("/register", async (req, res) => {
     }
 
     // 🔐 Check OTP validity
-    if (
-      !otpStore[email] ||
-      otpStore[email].code !== otp ||
-      otpStore[email].expires < Date.now()
-    ) {
-      return res.status(400).json("Invalid or expired OTP");
+
+    if (!otpStore[email] || otpStore[email].expires < Date.now()) {
+      return res.status(400).json("OTP expired");
     }
+
+    if (otpStore[email].code !== otp) {
+      otpStore[email].attempts += 1;
+
+      if (otpStore[email].attempts >= 3) {
+        await User.updateOne(
+          { email },
+          {
+            $set: {
+              lockUntil: new Date(Date.now() + 24 * 60 * 60 * 1000),
+            },
+          },
+          { upsert: true },
+        );
+
+        return res.status(403).json("Account locked for 24 hours");
+      }
+
+      return res.status(400).json("Invalid OTP");
+    }
+    // if (
+    //   !otpStore[email] ||
+    //   otpStore[email].code !== otp ||
+    //   otpStore[email].expires < Date.now()
+    // ) {
+    //   return res.status(400).json("Invalid or expired OTP");
+    // }
 
     const hashed = await bcrypt.hash(password, 10);
     const { userId, referralCode } = await generateUniqueIds();
@@ -142,6 +195,133 @@ router.post("/login", async (req, res) => {
     coins: user.coins,
     referralCode: user.referralCode,
   });
+});
+
+router.post("/forgot-password/send-otp", async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    if (!email) {
+      return res.status(400).json("Email required");
+    }
+
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.status(400).json("User not found");
+    }
+
+    // 🔒 Account lock check
+    if (user.lockUntil && user.lockUntil > Date.now()) {
+      return res.status(403).json({
+        message: "Account locked for 24 hours",
+        lockUntil: user.lockUntil,
+      });
+    }
+
+    const now = Date.now();
+
+    // 🔥 Rate limit: max 3 reset OTP in 10 minutes
+    if (user.otpRequestWindow && now - user.otpRequestWindow < 10 * 60 * 1000) {
+      if (user.otpRequestCount >= 3) {
+        return res.status(429).json("Too many OTP requests. Try later.");
+      }
+      user.otpRequestCount += 1;
+    } else {
+      user.otpRequestCount = 1;
+      user.otpRequestWindow = now;
+    }
+
+    await user.save();
+
+    const otp = Math.floor(1000 + Math.random() * 9000).toString();
+
+    otpStore[email] = {
+      code: otp,
+      expires: now + 5 * 60 * 1000,
+      attempts: 0,
+      type: "reset",
+    };
+
+    // 🔥 Send OTP via Brevo API
+    await axios.post(
+      "https://api.brevo.com/v3/smtp/email",
+      {
+        sender: {
+          name: "VELOOP Rewards",
+          email: process.env.BREVO_SENDER,
+        },
+        to: [{ email }],
+        subject: "VELOOP Password Reset OTP",
+        htmlContent: `
+          <h2>Password Reset Request</h2>
+          <p>Your OTP is:</p>
+          <h1>${otp}</h1>
+          <p>This OTP is valid for 5 minutes.</p>
+        `,
+      },
+      {
+        headers: {
+          "api-key": process.env.BREVO_API_KEY,
+          "Content-Type": "application/json",
+        },
+      },
+    );
+
+    res.json({ message: "Reset OTP sent successfully" });
+  } catch (error) {
+    console.error("FORGOT OTP ERROR:", error.response?.data || error.message);
+    res.status(500).json("Failed to send reset OTP");
+  }
+});
+
+router.post("/forgot-password/reset", async (req, res) => {
+  try {
+    const { email, otp, newPassword } = req.body;
+
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.status(400).json("User not found");
+    }
+
+    if (user.lockUntil && user.lockUntil > Date.now()) {
+      return res.status(403).json("Account locked for 24 hours");
+    }
+
+    if (!otpStore[email] || otpStore[email].expires < Date.now()) {
+      return res.status(400).json("OTP expired");
+    }
+
+    if (otpStore[email].code !== otp) {
+      otpStore[email].attempts += 1;
+
+      if (otpStore[email].attempts >= 3) {
+        user.lockUntil = new Date(Date.now() + 24 * 60 * 60 * 1000);
+        await user.save();
+        return res
+          .status(403)
+          .json("Too many wrong attempts. Account locked for 24 hours.");
+      }
+
+      return res.status(400).json("Invalid OTP");
+    }
+
+    const hashed = await bcrypt.hash(newPassword, 10);
+
+    user.password = hashed;
+    user.failedOtpAttempts = 0;
+    user.lockUntil = null;
+
+    await user.save();
+
+    delete otpStore[email];
+
+    res.json({ message: "Password reset successful" });
+  } catch (error) {
+    console.error("RESET ERROR:", error);
+    res.status(500).json("Password reset failed");
+  }
 });
 
 // ======================

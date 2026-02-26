@@ -25,6 +25,23 @@ const userSchema = new mongoose.Schema({
   referralCode: { type: String, unique: true },
   referredBy: String,
   referrals: [referralSchema],
+
+  failedOtpAttempts: {
+    type: Number,
+    default: 0,
+  },
+  lockUntil: {
+    type: Date,
+    default: null,
+  },
+  otpRequestCount: {
+    type: Number,
+    default: 0,
+  },
+  otpRequestWindow: {
+    type: Date,
+    default: null,
+  },
 });
 
 module.exports = mongoose.model("User", userSchema);
