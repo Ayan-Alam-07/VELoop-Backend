@@ -22,6 +22,13 @@ router.post("/send-otp", async (req, res) => {
       return res.status(400).json("Email required");
     }
 
+    // 🔴 Check if user already exists
+    const existingUser = await User.findOne({ email });
+
+    if (existingUser) {
+      return res.status(400).json("User already registered. Please login.");
+    }
+
     const otp = Math.floor(1000 + Math.random() * 9000).toString();
 
     otpStore[email] = {
@@ -51,9 +58,7 @@ router.post("/send-otp", async (req, res) => {
     res.json({ message: "OTP sent successfully" });
   } catch (error) {
     console.error("BREVO ERROR:", error.response?.data || error.message);
-    res
-      .status(500)
-      .json("OTP sending failed, Try SignIn using Google Or Try after a hour");
+    res.status(500).json("OTP sending failed");
   }
 });
 // ======================
@@ -63,6 +68,14 @@ router.post("/register", async (req, res) => {
   try {
     const { email, password, otp, referralInput } = req.body;
 
+    // 🔴 Check if already exists
+    const existingUser = await User.findOne({ email });
+
+    if (existingUser) {
+      return res.status(400).json("User already registered. Please login.");
+    }
+
+    // 🔐 Check OTP validity
     if (
       !otpStore[email] ||
       otpStore[email].code !== otp ||
@@ -72,7 +85,6 @@ router.post("/register", async (req, res) => {
     }
 
     const hashed = await bcrypt.hash(password, 10);
-
     const { userId, referralCode } = await generateUniqueIds();
 
     const newUser = new User({
@@ -84,7 +96,7 @@ router.post("/register", async (req, res) => {
       provider: "email",
     });
 
-    // 🎁 Referral
+    // 🎁 Referral logic
     if (referralInput) {
       const referrer = await User.findOne({
         referralCode: referralInput,
@@ -103,7 +115,8 @@ router.post("/register", async (req, res) => {
 
     res.json({ message: "Registered Successfully" });
   } catch (err) {
-    res.status(500).json(err.message);
+    console.error(err);
+    res.status(500).json("Registration failed");
   }
 });
 
