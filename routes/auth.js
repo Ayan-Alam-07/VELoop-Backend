@@ -71,7 +71,56 @@ router.post("/send-otp", async (req, res) => {
         },
         to: [{ email }],
         subject: "VELOOP Rewards OTP Verification",
-        htmlContent: `<h2>Your OTP is ${otp}</h2>`,
+        htmlContent: `
+<div style="font-family: Arial, sans-serif; background:#f4f6f8; padding:30px;">
+  <div style="max-width:500px; margin:auto; background:#ffffff; border-radius:10px; padding:30px; box-shadow:0 4px 15px rgba(0,0,0,0.08);">
+
+    <h2 style="text-align:center; color:#1e88e5; margin-bottom:10px;">
+      Welcome to VELOOP Rewards 🎉
+    </h2>
+
+    <p style="font-size:15px; color:#444; text-align:center;">
+      Verify your email to complete your account registration.
+    </p>
+
+    <div style="text-align:center; margin:30px 0;">
+      <span style="
+        display:inline-block;
+        background:#1e88e5;
+        color:#ffffff;
+        font-size:28px;
+        letter-spacing:6px;
+        padding:15px 25px;
+        border-radius:8px;
+        font-weight:bold;
+      ">
+        ${otp}
+      </span>
+    </div>
+
+    <p style="font-size:14px; color:#555; text-align:center;">
+      This OTP is valid for <strong>5 minutes</strong>.
+    </p>
+
+    <hr style="margin:25px 0; border:none; border-top:1px solid #eee;" />
+
+    <h4 style="color:#2e7d32;">💰 Refer & Earn</h4>
+    <p style="font-size:14px; color:#555;">
+      Invite your friends and earn <strong>Upto ₹100</strong> for every successful signup!
+      Share your referral code after login and start earning today.
+    </p>
+
+    <p style="font-size:12px; color:#888; margin-top:30px; text-align:center;">
+      If you didn’t request this, please ignore this email.
+    </p>
+
+    <p style="font-size:12px; color:#aaa; text-align:center; margin-top:10px;">
+      © ${new Date().getFullYear()} VELOOP Rewards. All rights reserved.
+    </p>
+
+  </div>
+</div>
+`,
       },
       {
         headers: {
@@ -252,11 +301,55 @@ router.post("/forgot-password/send-otp", async (req, res) => {
         to: [{ email }],
         subject: "VELOOP Password Reset OTP",
         htmlContent: `
-          <h2>Password Reset Request</h2>
-          <p>Your OTP is:</p>
-          <h1>${otp}</h1>
-          <p>This OTP is valid for 5 minutes.</p>
-        `,
+<div style="font-family: Arial, sans-serif; background:#f4f6f8; padding:30px;">
+  <div style="max-width:500px; margin:auto; background:#ffffff; border-radius:10px; padding:30px; box-shadow:0 4px 15px rgba(0,0,0,0.08);">
+
+    <h2 style="text-align:center; color:#e53935; margin-bottom:10px;">
+      Password Reset Request 🔐
+    </h2>
+
+    <p style="font-size:15px; color:#444; text-align:center;">
+      Use the OTP below to reset your password.
+    </p>
+
+    <div style="text-align:center; margin:30px 0;">
+      <span style="
+        display:inline-block;
+        background:#e53935;
+        color:#ffffff;
+        font-size:28px;
+        letter-spacing:6px;
+        padding:15px 25px;
+        border-radius:8px;
+        font-weight:bold;
+      ">
+        ${otp}
+      </span>
+    </div>
+
+    <p style="font-size:14px; color:#555; text-align:center;">
+      This OTP will expire in <strong>5 minutes</strong>.
+    </p>
+
+    <hr style="margin:25px 0; border:none; border-top:1px solid #eee;" />
+
+    <h4 style="color:#2e7d32;">💰 Still earning?</h4>
+    <p style="font-size:14px; color:#555;">
+      Don’t forget — you earn <strong>₹100</strong> for every friend you refer.
+      Log back in and keep growing your rewards!
+    </p>
+
+    <p style="font-size:12px; color:#888; margin-top:30px; text-align:center;">
+      If you didn’t request a password reset, you can safely ignore this email.
+    </p>
+
+    <p style="font-size:12px; color:#aaa; text-align:center; margin-top:10px;">
+      © ${new Date().getFullYear()} VELOOP Rewards. All rights reserved.
+    </p>
+
+  </div>
+</div>
+`,
       },
       {
         headers: {
