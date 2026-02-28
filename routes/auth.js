@@ -24,34 +24,44 @@ router.post("/send-otp", async (req, res) => {
 
     const existingUser = await User.findOne({ email });
 
-    // 🚫 Block if already registered
     if (existingUser) {
-      return res
-        .status(400)
-        .json({ message: "User already registered. Please login." });
+      return res.status(400).json({
+        message: "User already registered. Please login.",
+      });
     }
 
     const now = Date.now();
 
-    // 🔥 Rate limit using otpStore instead of DB
-    if (otpStore[email]) {
-      const diff = now - otpStore[email].lastRequest;
-
-      if (diff < 60 * 1000) {
-        return res
-          .status(429)
-          .json({ message: "Please wait before requesting again." });
-      }
+    // Initialize store if not exists
+    if (!otpStore[email]) {
+      otpStore[email] = {
+        count: 0,
+        firstRequestTime: now,
+      };
     }
+
+    const userOtpData = otpStore[email];
+
+    // 🔥 Reset counter after 1 hour
+    if (now - userOtpData.firstRequestTime > 60 * 60 * 1000) {
+      userOtpData.count = 0;
+      userOtpData.firstRequestTime = now;
+    }
+
+    // Block after 3 attempts
+    if (userOtpData.count >= 3) {
+      return res.status(429).json({
+        message:
+          "Too many OTP attempts. Please try again after 1 hour or use Google login.",
+      });
+    }
+
+    userOtpData.count += 1;
 
     const otp = Math.floor(1000 + Math.random() * 9000).toString();
 
-    otpStore[email] = {
-      code: otp,
-      expires: now + 5 * 60 * 1000,
-      lastRequest: now,
-      attempts: 0,
-    };
+    userOtpData.code = otp;
+    userOtpData.expires = now + 5 * 60 * 1000;
 
     await axios.post(
       "https://api.brevo.com/v3/smtp/email",
