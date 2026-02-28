@@ -19,48 +19,37 @@ router.post("/send-otp", async (req, res) => {
     const { email } = req.body;
 
     if (!email) {
-      return res.status(400).json("Email required");
+      return res.status(400).json({ message: "Email required" });
     }
 
-    let user = await User.findOne({ email });
+    const existingUser = await User.findOne({ email });
 
-    // 🔒 LOCK CHECK
-    if (user && user.lockUntil && user.lockUntil > Date.now()) {
-      return res.status(403).json({
-        message: "Account locked for 24 hours",
-        lockUntil: user.lockUntil,
-      });
+    // 🚫 Block if already registered
+    if (existingUser) {
+      return res
+        .status(400)
+        .json({ message: "User already registered. Please login." });
     }
 
-    // 🚫 BLOCK IF ALREADY REGISTERED
-    if (user) {
-      return res.status(400).json("User already registered. Please login.");
-    }
-
-    // 🔥 RATE LIMIT: Max 3 OTP per 10 minutes
     const now = Date.now();
 
-    if (!user) {
-      user = new User({ email }); // temp doc for rate tracking
-    }
+    // 🔥 Rate limit using otpStore instead of DB
+    if (otpStore[email]) {
+      const diff = now - otpStore[email].lastRequest;
 
-    if (user.otpRequestWindow && now - user.otpRequestWindow < 10 * 60 * 1000) {
-      if (user.otpRequestCount >= 3) {
-        return res.status(429).json("Too many OTP requests. Try later.");
+      if (diff < 60 * 1000) {
+        return res
+          .status(429)
+          .json({ message: "Please wait before requesting again." });
       }
-      user.otpRequestCount += 1;
-    } else {
-      user.otpRequestCount = 1;
-      user.otpRequestWindow = now;
     }
-
-    await user.save();
 
     const otp = Math.floor(1000 + Math.random() * 9000).toString();
 
     otpStore[email] = {
       code: otp,
       expires: now + 5 * 60 * 1000,
+      lastRequest: now,
       attempts: 0,
     };
 
@@ -86,7 +75,7 @@ router.post("/send-otp", async (req, res) => {
     res.json({ message: "OTP sent successfully" });
   } catch (error) {
     console.error(error);
-    res.status(500).json("OTP failed");
+    res.status(500).json({ message: "OTP failed" });
   }
 });
 
