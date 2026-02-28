@@ -51,8 +51,7 @@ router.post("/send-otp", async (req, res) => {
     // Block after 3 attempts
     if (userOtpData.count >= 3) {
       return res.status(429).json({
-        message:
-          "Too many OTP attempts. Please try again after 1 hour or use Google login.",
+        message: "Too many OTP attempts. Try again later or use Google login.",
       });
     }
 
