@@ -198,26 +198,47 @@ router.post("/register", async (req, res) => {
 
     // 🎁 Referral logic
     if (referralInput) {
+      // 1️⃣ Validate format
+      const referralRegex = /^\d{8}$/;
+
+      if (!referralRegex.test(referralInput)) {
+        return res.status(400).json({
+          message: "Invalid referral code format",
+        });
+      }
+
       const referrer = await User.findOne({
         referralCode: referralInput,
       });
 
-      // ❌ If referral code invalid → stop registration
+      // 2️⃣ Check existence
       if (!referrer) {
         return res.status(400).json({
           message: "Referral code does not exist",
         });
       }
 
-      // ❌ Prevent self-referral
+      // 3️⃣ Prevent self-referral
       if (referrer.email === email) {
         return res.status(400).json({
           message: "You cannot use your own referral code",
         });
       }
 
-      // ✅ Apply referral reward
+      // 4️⃣ Prevent duplicate referral
+      const alreadyReferred = referrer.referrals.some(
+        (r) => r.userId === userId,
+      );
+
+      if (alreadyReferred) {
+        return res.status(400).json({
+          message: "Referral already applied",
+        });
+      }
+
+      // 5️⃣ Apply reward
       referrer.coins += 137;
+
       referrer.referrals.push({
         userId,
         email,
@@ -464,22 +485,45 @@ router.post("/google-login", async (req, res) => {
       });
 
       if (referralInput) {
+        // 1️⃣ Validate format
+        const referralRegex = /^\d{8}$/;
+
+        if (!referralRegex.test(referralInput)) {
+          return res.status(400).json({
+            message: "Invalid referral code format",
+          });
+        }
+
         const referrer = await User.findOne({
           referralCode: referralInput,
         });
 
+        // 2️⃣ Check existence
         if (!referrer) {
           return res.status(400).json({
             message: "Referral code does not exist",
           });
         }
 
+        // 3️⃣ Prevent self-referral
         if (referrer.email === email) {
           return res.status(400).json({
             message: "You cannot use your own referral code",
           });
         }
 
+        // 4️⃣ Prevent duplicate referral
+        const alreadyReferred = referrer.referrals.some(
+          (r) => r.userId === userId,
+        );
+
+        if (alreadyReferred) {
+          return res.status(400).json({
+            message: "Referral already applied",
+          });
+        }
+
+        // 5️⃣ Apply reward
         referrer.coins += 137;
 
         referrer.referrals.push({
@@ -490,7 +534,7 @@ router.post("/google-login", async (req, res) => {
 
         await referrer.save();
 
-        user.referredBy = referrer.userId;
+        newUser.referredBy = referrer.userId;
       }
       await user.save();
     }

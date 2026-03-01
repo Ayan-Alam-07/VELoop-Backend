@@ -22,7 +22,12 @@ const userSchema = new mongoose.Schema({
     default: 0,
   },
 
-  referralCode: { type: String, unique: true },
+  referralCode: {
+    type: String,
+    required: true,
+    unique: true,
+    match: [/^\d{8}$/, "Referral code must be exactly 8 digits"],
+  },
   referredBy: String,
   referrals: [referralSchema],
 
