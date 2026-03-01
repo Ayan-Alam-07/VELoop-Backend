@@ -203,7 +203,7 @@ router.post("/register", async (req, res) => {
 
       if (!referralRegex.test(referralInput)) {
         return res.status(400).json({
-          message: "Invalid referral code format",
+          message: "Invalid! format referral code be must 8 digits",
         });
       }
 
