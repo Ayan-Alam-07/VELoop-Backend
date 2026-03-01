@@ -202,12 +202,31 @@ router.post("/register", async (req, res) => {
         referralCode: referralInput,
       });
 
-      if (referrer) {
-        referrer.coins += 137;
-        referrer.referrals.push({ userId });
-        await referrer.save();
-        newUser.referredBy = referrer.userId;
+      // ❌ If referral code invalid → stop registration
+      if (!referrer) {
+        return res.status(400).json({
+          message: "Referral code does not exist",
+        });
       }
+
+      // ❌ Prevent self-referral
+      if (referrer.email === email) {
+        return res.status(400).json({
+          message: "You cannot use your own referral code",
+        });
+      }
+
+      // ✅ Apply referral reward
+      referrer.coins += 137;
+      referrer.referrals.push({
+        userId,
+        email,
+        date: new Date(),
+      });
+
+      await referrer.save();
+
+      newUser.referredBy = referrer.userId;
     }
 
     await newUser.save();
@@ -449,14 +468,30 @@ router.post("/google-login", async (req, res) => {
           referralCode: referralInput,
         });
 
-        if (referrer) {
-          referrer.coins += 137;
-          referrer.referrals.push({ userId });
-          await referrer.save();
-          user.referredBy = referrer.userId;
+        if (!referrer) {
+          return res.status(400).json({
+            message: "Referral code does not exist",
+          });
         }
-      }
 
+        if (referrer.email === email) {
+          return res.status(400).json({
+            message: "You cannot use your own referral code",
+          });
+        }
+
+        referrer.coins += 137;
+
+        referrer.referrals.push({
+          userId,
+          email,
+          date: new Date(),
+        });
+
+        await referrer.save();
+
+        user.referredBy = referrer.userId;
+      }
       await user.save();
     }
 
