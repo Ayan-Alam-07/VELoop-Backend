@@ -278,6 +278,7 @@ router.post("/login", async (req, res) => {
 
   res.json({
     token,
+    email: user.email,
     userId: user.userId,
     coins: user.coins,
     referralCode: user.referralCode,
