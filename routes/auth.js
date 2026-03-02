@@ -546,6 +546,7 @@ router.post("/google-login", async (req, res) => {
 
     res.json({
       token: jwtToken,
+      email: user.email,
       userId: user.userId,
       coins: user.coins,
       referralCode: user.referralCode,
