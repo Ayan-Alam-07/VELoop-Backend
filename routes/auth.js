@@ -176,13 +176,6 @@ router.post("/register", async (req, res) => {
 
       return res.status(400).json("Invalid OTP");
     }
-    // if (
-    //   !otpStore[email] ||
-    //   otpStore[email].code !== otp ||
-    //   otpStore[email].expires < Date.now()
-    // ) {
-    //   return res.status(400).json("Invalid or expired OTP");
-    // }
 
     const hashed = await bcrypt.hash(password, 10);
     const { userId, referralCode } = await generateUniqueIds();
@@ -248,6 +241,26 @@ router.post("/register", async (req, res) => {
       await referrer.save();
 
       newUser.referredBy = referrer.userId;
+    }
+
+    // reffer history
+    if (req.body.referralCode) {
+      const referrer = await User.findOne({
+        referralCode: req.body.referralCode,
+      });
+
+      if (referrer) {
+        newUser.referredBy = req.body.referralCode;
+
+        referrer.referrals.push({
+          userId: userId,
+          email: email,
+          referredAt: new Date(),
+        });
+
+        referrer.coins += 10; // reward amount
+        await referrer.save();
+      }
     }
 
     await newUser.save();
@@ -537,6 +550,27 @@ router.post("/google-login", async (req, res) => {
 
         newUser.referredBy = referrer.userId;
       }
+
+      // reffer history
+      if (req.body.referralCode) {
+        const referrer = await User.findOne({
+          referralCode: req.body.referralCode,
+        });
+
+        if (referrer) {
+          user.referredBy = req.body.referralCode;
+
+          referrer.referrals.push({
+            userId: userId,
+            email: email,
+            referredAt: new Date(),
+          });
+
+          referrer.coins += 10;
+          await referrer.save();
+        }
+      }
+
       await user.save();
     }
 
@@ -553,6 +587,20 @@ router.post("/google-login", async (req, res) => {
     });
   } catch (err) {
     res.status(400).json("Google login failed");
+  }
+});
+
+// reffer history
+router.get("/referral-history", authMiddleware, async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id);
+
+    res.json({
+      totalReferrals: user.referrals.length,
+      referrals: user.referrals,
+    });
+  } catch (error) {
+    res.status(500).json("Server error");
   }
 });
 

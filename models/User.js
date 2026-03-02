@@ -28,8 +28,22 @@ const userSchema = new mongoose.Schema({
     unique: true,
     match: [/^\d{8}$/, "Referral code must be exactly 8 digits"],
   },
-  referredBy: String,
-  referrals: [referralSchema],
+  // referredBy: String,
+  referredBy: {
+    type: String, // store referralCode of referrer
+    default: null,
+  },
+  // referrals: [referralSchema],
+  referrals: [
+    {
+      userId: String,
+      email: String,
+      referredAt: {
+        type: Date,
+        default: Date.now,
+      },
+    },
+  ],
 
   failedOtpAttempts: {
     type: Number,
