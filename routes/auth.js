@@ -2,10 +2,11 @@ const router = require("express").Router();
 const User = require("../models/User");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
-const nodemailer = require("nodemailer");
+// const nodemailer = require("nodemailer");
 const { OAuth2Client } = require("google-auth-library");
 const otpStore = require("../utils/otpStore");
 const generateUniqueIds = require("../utils/idGenerator");
+const authMiddleware = require("../middleware/authMiddleware");
 
 const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
@@ -233,34 +234,14 @@ router.post("/register", async (req, res) => {
       referrer.coins += 137;
 
       referrer.referrals.push({
-        userId,
-        email,
-        date: new Date(),
+        userId: userId,
+        email: email,
+        referredAt: new Date(),
       });
 
       await referrer.save();
 
       newUser.referredBy = referrer.userId;
-    }
-
-    // reffer history
-    if (req.body.referralCode) {
-      const referrer = await User.findOne({
-        referralCode: req.body.referralCode,
-      });
-
-      if (referrer) {
-        newUser.referredBy = req.body.referralCode;
-
-        referrer.referrals.push({
-          userId: userId,
-          email: email,
-          referredAt: new Date(),
-        });
-
-        referrer.coins += 10; // reward amount
-        await referrer.save();
-      }
     }
 
     await newUser.save();
@@ -541,34 +522,14 @@ router.post("/google-login", async (req, res) => {
         referrer.coins += 137;
 
         referrer.referrals.push({
-          userId,
-          email,
-          date: new Date(),
+          userId: user.userId,
+          email: email,
+          referredAt: new Date(),
         });
+
+        user.referredBy = referrer.userId;
 
         await referrer.save();
-
-        newUser.referredBy = referrer.userId;
-      }
-
-      // reffer history
-      if (req.body.referralCode) {
-        const referrer = await User.findOne({
-          referralCode: req.body.referralCode,
-        });
-
-        if (referrer) {
-          user.referredBy = req.body.referralCode;
-
-          referrer.referrals.push({
-            userId: userId,
-            email: email,
-            referredAt: new Date(),
-          });
-
-          referrer.coins += 10;
-          await referrer.save();
-        }
       }
 
       await user.save();
