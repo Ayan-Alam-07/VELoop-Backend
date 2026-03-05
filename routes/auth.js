@@ -479,6 +479,9 @@ router.post("/google-login", async (req, res) => {
         provider: "google",
       });
 
+      console.log("Referral input:", referralInput);
+      console.log("Referrer found:", referrer?.email);
+
       if (referralInput) {
         const referralRegex = /^\d{8}$/;
 
@@ -504,7 +507,7 @@ router.post("/google-login", async (req, res) => {
           });
         }
 
-        const alreadyReferred = referrer.referrals?.some(
+        const alreadyReferred = referrer.referrals.some(
           (r) => r.email === email,
         );
 
@@ -517,7 +520,7 @@ router.post("/google-login", async (req, res) => {
             referredAt: new Date(),
           });
 
-          user.referredBy = referrer.userId;
+          user.referredBy = referrer.referralCode;
 
           await referrer.save();
         }
