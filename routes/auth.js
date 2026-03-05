@@ -551,6 +551,19 @@ router.post("/google-login", async (req, res) => {
   }
 });
 
+// fetch coins
+router.get("/user-coins", authMiddleware, async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id).select("coins");
+
+    res.json({
+      coins: user.coins,
+    });
+  } catch (error) {
+    res.status(500).json("Failed to fetch coins");
+  }
+});
+
 // reffer history
 router.get("/referral-history", authMiddleware, async (req, res) => {
   try {
