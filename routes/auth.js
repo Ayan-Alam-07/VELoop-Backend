@@ -492,8 +492,8 @@ router.post("/google-login", async (req, res) => {
           referralCode: referralInput,
         });
 
-        console.log("Referral input:", referralInput);
-        console.log("Referrer found:", referrer?.email);
+        // console.log("Referral input:", referralInput);
+        // console.log("Referrer found:", referrer?.email);
 
         if (!referrer) {
           return res.status(400).json({
