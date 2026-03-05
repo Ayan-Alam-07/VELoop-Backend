@@ -479,9 +479,6 @@ router.post("/google-login", async (req, res) => {
         provider: "google",
       });
 
-      console.log("Referral input:", referralInput);
-      console.log("Referrer found:", referrer?.email);
-
       if (referralInput) {
         const referralRegex = /^\d{8}$/;
 
@@ -494,6 +491,9 @@ router.post("/google-login", async (req, res) => {
         const referrer = await User.findOne({
           referralCode: referralInput,
         });
+
+        console.log("Referral input:", referralInput);
+        console.log("Referrer found:", referrer?.email);
 
         if (!referrer) {
           return res.status(400).json({
@@ -541,7 +541,11 @@ router.post("/google-login", async (req, res) => {
       referralCode: user.referralCode,
     });
   } catch (err) {
-    res.status(400).json("Google login failed");
+    console.error("Google login error:", err);
+    res.status(500).json({
+      message: "Google login failed",
+      error: err.message,
+    });
   }
 });
 
