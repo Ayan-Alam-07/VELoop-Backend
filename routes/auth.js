@@ -7,7 +7,7 @@ const { OAuth2Client } = require("google-auth-library");
 const otpStore = require("../utils/otpStore");
 const generateUniqueIds = require("../utils/idGenerator");
 const authMiddleware = require("../middleware/authMiddleware");
-
+const Transaction = require("../models/Transaction");
 const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 // ======================
@@ -232,6 +232,13 @@ router.post("/register", async (req, res) => {
 
       // 5️⃣ Apply reward
       referrer.coins += 137;
+
+      await Transaction.create({
+        userId: referrer.userId,
+        type: "referral",
+        coins: 137,
+        note: `Referral reward from ${email}`,
+      });
 
       referrer.referrals.push({
         userId: userId,
@@ -513,6 +520,13 @@ router.post("/google-login", async (req, res) => {
 
         if (!alreadyReferred) {
           referrer.coins += 137;
+
+          await Transaction.create({
+            userId: referrer.userId,
+            type: "referral",
+            coins: 137,
+            note: `Referral reward from ${email}`,
+          });
 
           referrer.referrals.push({
             userId: user.userId,
