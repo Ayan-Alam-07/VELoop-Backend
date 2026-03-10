@@ -5,6 +5,7 @@ const withdrawalRoutes = require("./routes/withdrawal");
 const adminRoutes = require("./routes/admin");
 const adRoutes = require("./routes/ad");
 const transactionRoutes = require("./routes/transaction");
+const exchangeRoutes = require("./routes/exchange");
 
 require("dotenv").config();
 
@@ -30,6 +31,8 @@ app.use("/api/admin", adminRoutes);
 app.use("/api/ad", adRoutes);
 
 app.use("/api/transaction", transactionRoutes);
+
+app.use("/api/exchange", exchangeRoutes);
 
 const PORT = process.env.PORT || 5000;
 
