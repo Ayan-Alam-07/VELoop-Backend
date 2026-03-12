@@ -1,112 +1,172 @@
+
 const User = require("../models/User");
 const Transaction = require("../models/Transaction");
+const ExchangeOffer = require("../models/ExchangeOffer");
 
-// RANDOM GENERATOR
 
-const generateReward = (coinMin, coinMax, gemMin, gemMax) => {
-  const coins = Math.floor(Math.random() * (coinMax - coinMin + 1)) + coinMin;
+// -------------------------
+// GENERATE RANDOM OFFER
+// -------------------------
 
-  const gems = Math.floor(Math.random() * (gemMax - gemMin + 1)) + gemMin;
+const generateOffer = (cardId) => {
+
+  const configs = {
+
+    1: { coinMin:135, coinMax:185, gemMin:28, gemMax:36 },
+    2: { coinMin:160, coinMax:250, gemMin:32, gemMax:41 },
+    3: { coinMin:145, coinMax:200, gemMin:30, gemMax:37 }
+
+  };
+
+  const config = configs[cardId];
+
+  const coins =
+    Math.floor(Math.random() * (config.coinMax - config.coinMin + 1)) +
+    config.coinMin;
+
+  const gems =
+    Math.floor(Math.random() * (config.gemMax - config.gemMin + 1)) +
+    config.gemMin;
 
   return { coins, gems };
+
 };
 
-// GET TREASURE CARDS
 
-exports.getExchangeCards = async (req, res) => {
-  const cards = [
-    {
-      id: 1,
-      coinMin: 125,
-      coinMax: 241,
-      gemMin: 26,
-      gemMax: 38,
-    },
-    {
-      id: 2,
-      coinMin: 155,
-      coinMax: 280,
-      gemMin: 29,
-      gemMax: 42,
-    },
-    {
-      id: 3,
-      coinMin: 160,
-      coinMax: 300,
-      gemMin: 30,
-      gemMax: 38,
-    },
-  ];
+// -------------------------
+// GET EXCHANGE OFFERS
+// -------------------------
 
-  const result = cards.map((card) => {
-    const reward = generateReward(
-      card.coinMin,
-      card.coinMax,
-      card.gemMin,
-      card.gemMax,
-    );
+exports.getOffers = async (req, res) => {
 
-    return {
-      id: card.id,
-      coins: reward.coins,
-      gems: reward.gems,
-    };
-  });
+  try {
 
-  res.json(result);
+    const userId = req.user.id;
+
+    let offers = await ExchangeOffer.find({ userId });
+
+    if (offers.length === 0) {
+
+      const cards = [1,2,3];
+
+      const newOffers = [];
+
+      for (let cardId of cards) {
+
+        const reward = generateOffer(cardId);
+
+        const offer = await ExchangeOffer.create({
+
+          userId,
+          cardId,
+          coins: reward.coins,
+          gemsRequired: reward.gems
+
+        });
+
+        newOffers.push(offer);
+
+      }
+
+      offers = newOffers;
+
+    }
+
+    res.json(offers);
+
+  } catch (error) {
+
+    res.status(500).json("Failed to fetch offers");
+
+  }
+
 };
 
+
+// -------------------------
 // CLAIM EXCHANGE
+// -------------------------
 
 exports.claimExchange = async (req, res) => {
+
   try {
+
     const { cardId } = req.body;
 
     const user = await User.findById(req.user.id);
 
-    if (!user) return res.status(404).json("User not found");
+    const offer = await ExchangeOffer.findOne({
 
-    const cards = {
-      1: { coinMin: 125, coinMax: 241, gemMin: 26, gemMax: 38 },
-      2: { coinMin: 155, coinMax: 280, gemMin: 29, gemMax: 42 },
-      3: { coinMin: 160, coinMax: 300, gemMin: 30, gemMax: 38 },
-    };
+      userId: req.user.id,
+      cardId
 
-    const card = cards[cardId];
+    });
 
-    if (!card) return res.status(400).json("Invalid card");
+    if (!offer) return res.status(404).json("Offer not found");
 
-    const reward = generateReward(
-      card.coinMin,
-      card.coinMax,
-      card.gemMin,
-      card.gemMax,
-    );
 
-    if (user.gems < reward.gems) {
+
+    if (user.gems < offer.gemsRequired) {
+
       return res.status(400).json("Not enough gems");
+
     }
 
-    user.gems -= reward.gems;
-    user.coins += reward.coins;
-    user.lifetimeEarning += reward.coins;
+
+    // APPLY REWARD
+
+    user.gems -= offer.gemsRequired;
+
+    user.coins += offer.coins;
+
+    user.lifetimeEarning += offer.coins;
 
     await user.save();
 
+
+
+    // CREATE TRANSACTION
+
     await Transaction.create({
+
       userId: user.userId,
+
       type: "exchange",
-      coins: reward.coins,
-      note: `Exchange Center reward using ${reward.gems} gems`,
+
+      coins: offer.coins,
+
+      note: `Exchange center reward`
+
     });
 
+
+
+    // GENERATE NEW OFFER
+
+    const reward = generateOffer(cardId);
+
+    offer.coins = reward.coins;
+
+    offer.gemsRequired = reward.gems;
+
+    await offer.save();
+
+
+
     res.json({
-      coinsEarned: reward.coins,
-      gemsUsed: reward.gems,
-      newCoinBalance: user.coins,
-      newGemBalance: user.gems,
+
+      coinsEarned: offer.coins,
+
+      newCoins: user.coins,
+
+      newGems: user.gems
+
     });
+
   } catch (error) {
+
     res.status(500).json("Exchange failed");
+
   }
+
 };
