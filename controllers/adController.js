@@ -70,7 +70,12 @@ exports.getAdOffers = async (req, res) => {
 
 exports.watchAd = async (req, res) => {
   try {
-    const { slot } = req.body;
+    const { slot, adCompleted } = req.body;
+
+    // 🚨 Prevent fake requests
+    if (!adCompleted) {
+      return res.status(400).json("Ad not completed");
+    }
 
     const user = await User.findById(req.user.id);
 
@@ -83,6 +88,7 @@ exports.watchAd = async (req, res) => {
       return res.status(404).json("Offer not found");
     }
 
+    // cooldown protection
     if (offer.cooldownUntil && offer.cooldownUntil > Date.now()) {
       return res.status(400).json("Ad cooldown active");
     }
@@ -95,7 +101,7 @@ exports.watchAd = async (req, res) => {
 
     await user.save();
 
-    // transaction record
+    // transaction history
     await Transaction.create({
       userId: user.userId,
       type: "watch_ad",
@@ -103,7 +109,7 @@ exports.watchAd = async (req, res) => {
       note: "Watch Ad reward",
     });
 
-    // generate new reward
+    // generate next reward
     offer.coins = generateCoins();
     offer.cooldownUntil = new Date(Date.now() + 45000);
 
@@ -113,9 +119,9 @@ exports.watchAd = async (req, res) => {
       coinsEarned: reward,
       nextCoins: offer.coins,
       cooldown: 45,
-      newBalance: user.coins,
     });
-  } catch (err) {
+  } catch (error) {
+    console.error(error);
     res.status(500).json("Ad reward failed");
   }
 };
