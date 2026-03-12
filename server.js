@@ -27,7 +27,6 @@ mongoose
 app.use("/api/auth", require("./routes/auth"));
 app.use("/api/withdrawal", withdrawalRoutes);
 app.use("/api/admin", adminRoutes);
-app.use("/api/ad", adRoutes);
 app.use("/api/transaction", transactionRoutes);
 app.use("/api/exchange", exchangeRoutes);
 app.use("/api/ad", adRoutes);
