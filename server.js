@@ -3,7 +3,6 @@ const mongoose = require("mongoose");
 const cors = require("cors");
 const withdrawalRoutes = require("./routes/withdrawal");
 const adminRoutes = require("./routes/admin");
-const adRoutes = require("./routes/ad");
 const transactionRoutes = require("./routes/transaction");
 const exchangeRoutes = require("./routes/exchange");
 const adRoutes = require("./routes/ad");
