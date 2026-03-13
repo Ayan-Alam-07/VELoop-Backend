@@ -71,9 +71,52 @@ exports.getCaptchaTask = async (req, res) => {
   }
 };
 
+// exports.verifyCaptcha = async (req, res) => {
+//   try {
+//     const { taskId, selected } = req.body;
+
+//     const task = await CaptchaTask.findById(taskId);
+
+//     if (!task) {
+//       return res.status(404).json("Captcha expired");
+//     }
+
+//     const user = await User.findById(req.user.id);
+
+//     const correct = selected === task.correctOption;
+
+//     const reward = correct ? 1 : 0.75;
+
+//     user.gems += reward;
+
+//     await user.save();
+
+//     await Transaction.create({
+//       userId: user.userId,
+//       type: "captcha_task",
+//       coins: reward,
+//       status: "success",
+//       note: correct ? "Captcha correct" : "Captcha wrong",
+//     });
+
+//     await CaptchaTask.findByIdAndDelete(taskId);
+
+//     res.json({
+//       result: correct,
+//       reward,
+//     });
+//   } catch (err) {
+//     res.status(500).json("Captcha verification failed");
+//   }
+// };
+
 exports.verifyCaptcha = async (req, res) => {
   try {
     const { taskId, selected } = req.body;
+
+    if (!taskId || !selected) {
+      return res.status(400).json("Invalid captcha request");
+    }
 
     const task = await CaptchaTask.findById(taskId);
 
@@ -83,9 +126,21 @@ exports.verifyCaptcha = async (req, res) => {
 
     const user = await User.findById(req.user.id);
 
-    const correct = selected === task.correctOption;
+    if (!user) {
+      return res.status(404).json("User not found");
+    }
+
+    // convert to number to avoid type mismatch
+    const selectedNumber = Number(selected);
+
+    const correct = selectedNumber === task.correctOption;
 
     const reward = correct ? 1 : 0.75;
+
+    // ensure gems exists
+    if (!user.gems) {
+      user.gems = 0;
+    }
 
     user.gems += reward;
 
@@ -93,19 +148,22 @@ exports.verifyCaptcha = async (req, res) => {
 
     await Transaction.create({
       userId: user.userId,
-      type: "captcha_task",
+      type: "captcha",
       coins: reward,
       status: "success",
       note: correct ? "Captcha correct" : "Captcha wrong",
     });
 
+    // remove captcha task
     await CaptchaTask.findByIdAndDelete(taskId);
 
     res.json({
       result: correct,
       reward,
     });
-  } catch (err) {
+  } catch (error) {
+    console.error("CAPTCHA VERIFY ERROR:", error);
+
     res.status(500).json("Captcha verification failed");
   }
 };
