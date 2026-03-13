@@ -98,7 +98,7 @@ exports.watchAd = async (req, res) => {
 
     const reward = offer.coins;
 
-    // apply reward
+    // apply rewards
     user.coins += reward;
     user.totalAdsWatched += 1;
 
