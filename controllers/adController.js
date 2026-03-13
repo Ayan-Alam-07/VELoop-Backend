@@ -68,6 +68,66 @@ exports.getAdOffers = async (req, res) => {
 // WATCH AD SUCCESS
 // ------------------------
 
+// exports.watchAd = async (req, res) => {
+//   try {
+//     const { slot, adCompleted } = req.body;
+
+//     if (!adCompleted) {
+//       return res.status(400).json("Ad not completed");
+//     }
+
+//     const user = await User.findById(req.user.id);
+
+//     if (!user) {
+//       return res.status(404).json("User not found");
+//     }
+
+//     const offer = await AdOffer.findOne({
+//       userId: req.user.id,
+//       slot,
+//     });
+
+//     if (!offer) {
+//       return res.status(404).json("Offer not found");
+//     }
+
+//     // cooldown protection
+//     if (offer.cooldownUntil && offer.cooldownUntil > Date.now()) {
+//       return res.status(400).json("Ad cooldown active");
+//     }
+
+//     const reward = offer.coins;
+
+//     // apply rewards
+//     user.coins += reward;
+//     user.totalAdsWatched += 1;
+
+//     await user.save();
+
+//     await Transaction.create({
+//       userId: user.userId,
+//       type: "watch_ad",
+//       coins: reward,
+//       note: "Watch Ad reward",
+//     });
+
+//     // generate new reward
+//     offer.coins = generateCoins();
+//     offer.cooldownUntil = new Date(Date.now() + 45000);
+
+//     await offer.save();
+
+//     res.json({
+//       coinsEarned: reward,
+//       nextCoins: offer.coins,
+//       cooldown: 45,
+//       newBalance: user.coins,
+//     });
+//   } catch (error) {
+//     console.error("WATCH AD ERROR:", error);
+//     res.status(500).json("Ad reward failed");
+//   }
+// };
 exports.watchAd = async (req, res) => {
   try {
     const { slot, adCompleted } = req.body;
@@ -98,28 +158,34 @@ exports.watchAd = async (req, res) => {
 
     const reward = offer.coins;
 
-    // apply rewards
+    // generate next reward BEFORE saving
+    const nextReward = generateCoins();
+    const nextCooldown = new Date(Date.now() + 45000);
+
+    // update offer first
+    offer.coins = nextReward;
+    offer.cooldownUntil = nextCooldown;
+
+    await offer.save();
+
+    // update user
     user.coins += reward;
     user.totalAdsWatched += 1;
 
     await user.save();
 
+    // transaction log
     await Transaction.create({
       userId: user.userId,
       type: "watch_ad",
       coins: reward,
+      status: "success",
       note: "Watch Ad reward",
     });
 
-    // generate new reward
-    offer.coins = generateCoins();
-    offer.cooldownUntil = new Date(Date.now() + 45000);
-
-    await offer.save();
-
     res.json({
       coinsEarned: reward,
-      nextCoins: offer.coins,
+      nextCoins: nextReward,
       cooldown: 45,
       newBalance: user.coins,
     });
