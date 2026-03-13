@@ -6,6 +6,7 @@ const adminRoutes = require("./routes/admin");
 const transactionRoutes = require("./routes/transaction");
 const exchangeRoutes = require("./routes/exchange");
 const adRoutes = require("./routes/ad");
+const captchaRoutes = require("./routes/captchaRoutes");
 
 require("dotenv").config();
 
@@ -29,6 +30,7 @@ app.use("/api/admin", adminRoutes);
 app.use("/api/transaction", transactionRoutes);
 app.use("/api/exchange", exchangeRoutes);
 app.use("/api/ad", adRoutes);
+app.use("/api/captcha", captchaRoutes);
 
 const PORT = process.env.PORT || 5000;
 
