@@ -94,7 +94,7 @@ exports.verifyCaptcha = async (req, res) => {
     await Transaction.create({
       userId: user.userId,
       type: "captcha_task",
-      amount: reward,
+      coins: reward,
       status: "success",
       note: correct ? "Captcha correct" : "Captcha wrong",
     });
