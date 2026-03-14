@@ -7,6 +7,7 @@ const transactionRoutes = require("./routes/transaction");
 const exchangeRoutes = require("./routes/exchange");
 const adRoutes = require("./routes/ad");
 const captchaRoutes = require("./routes/captchaRoutes");
+const dailyBonusRoutes = require("./routes/dailyBonus");
 
 require("dotenv").config();
 
@@ -31,6 +32,7 @@ app.use("/api/transaction", transactionRoutes);
 app.use("/api/exchange", exchangeRoutes);
 app.use("/api/ad", adRoutes);
 app.use("/api/captcha", captchaRoutes);
+app.use("/api/daily-bonus", dailyBonusRoutes);
 
 const PORT = process.env.PORT || 5000;
 
