@@ -54,6 +54,7 @@ exports.getCaptchaTask = async (req, res) => {
 
     const { captcha, options } = generateCaptchaOptions();
 
+    await CaptchaTask.deleteMany({ userId });
     const task = await CaptchaTask.create({
       userId,
       captcha,

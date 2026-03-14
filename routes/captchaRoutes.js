@@ -1,6 +1,7 @@
 const router = require("express").Router();
 
 const authMiddleware = require("../middleware/authMiddleware");
+const captchaLimiter = require("../middleware/captchaLimiter");
 
 const {
   getCaptchaTask,
@@ -9,6 +10,6 @@ const {
 
 router.get("/task", authMiddleware, getCaptchaTask);
 
-router.post("/verify", authMiddleware, verifyCaptcha);
+router.post("/verify", authMiddleware, captchaLimiter, verifyCaptcha);
 
 module.exports = router;
