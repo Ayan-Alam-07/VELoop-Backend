@@ -8,7 +8,11 @@ exports.startDailyBonus = async (req, res) => {
 
     const today = new Date().toISOString().slice(0, 10);
 
-    const alreadyClaimed = await DailyBonus.findOne({ userId, date: today });
+    const alreadyClaimed = await DailyBonus.findOne({
+      userId,
+      date: today,
+      status: "success",
+    });
 
     if (alreadyClaimed) {
       return res.status(400).json("Daily bonus already claimed");
