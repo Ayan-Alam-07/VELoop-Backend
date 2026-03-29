@@ -95,6 +95,16 @@ const userSchema = new mongoose.Schema(
     },
 
     // =====================
+    // Recently added
+    // =====================
+
+    role: {
+      type: String,
+      enum: ["user", "admin"],
+      default: "user",
+    },
+
+    // =====================
     // WITHDRAWAL STATS
     // =====================
 
