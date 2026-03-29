@@ -11,6 +11,7 @@ exports.getVoucherOptions = async (req, res) => {
 
     res.json(vouchers);
   } catch (error) {
-    res.status(500).json("Failed to fetch vouchers");
+    console.error(error);
+    res.status(500).json("Failed to fetch voucher options");
   }
 };

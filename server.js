@@ -8,6 +8,7 @@ const exchangeRoutes = require("./routes/exchange");
 const adRoutes = require("./routes/ad");
 const captchaRoutes = require("./routes/captchaRoutes");
 const dailyBonusRoutes = require("./routes/dailyBonus");
+const seedVoucherOptions = require("./config/seedVoucherOptions");
 
 require("dotenv").config();
 
@@ -25,6 +26,8 @@ mongoose
   .connect(process.env.MONGO_URI)
   .then(() => console.log("MongoDB Connected"));
 
+seedVoucherOptions();
+
 app.use("/api/auth", require("./routes/auth"));
 // app.use("/api/withdrawal", withdrawalRoutes);
 app.use("/api/admin", adminRoutes);
@@ -36,6 +39,8 @@ app.use("/api/daily-bonus", dailyBonusRoutes);
 
 app.use("/api/admin", require("./routes/adminRoutes"));
 app.use("/api/withdrawals", require("./routes/withdrawalRoutes"));
+
+app.use("/api/vouchers", require("./routes/voucherRoutes"));
 
 const PORT = process.env.PORT || 5000;
 
