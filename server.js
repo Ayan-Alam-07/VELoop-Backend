@@ -1,3 +1,8 @@
+// const dns = require("node:dns");
+
+// dns.setServers(["1.1.1.1", "8.8.8.8"]);
+require("node:dns").setServers(["8.8.8.8", "1.1.1.1"]);
+
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
@@ -22,9 +27,11 @@ app.use(express.json());
 
 mongoose
   .connect(process.env.MONGO_URI)
-  .then(() => console.log("MongoDB Connected"));
+  .then(() => console.log("MongoDB Connected"))
+  .catch((err) => console.error("MongoDB Error:", err));
 
-await seedVoucherOptions();
+// await seedVoucherOptions();
+// seedVoucherOptions();
 
 app.use("/api/auth", require("./routes/auth"));
 app.use("/api/transaction", transactionRoutes);
