@@ -23,4 +23,6 @@ const voucherOptionSchema = new mongoose.Schema(
   { timestamps: true },
 );
 
+voucherOptionSchema.index({ payoutType: 1, amount: 1 }, { unique: true });
+
 module.exports = mongoose.model("VoucherOption", voucherOptionSchema);

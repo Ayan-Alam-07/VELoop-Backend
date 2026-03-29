@@ -41,3 +41,5 @@ router.put(
   adminMiddleware,
   adminWithdrawalController.rejectWithdrawal,
 );
+
+module.exports = router;

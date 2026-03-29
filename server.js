@@ -1,8 +1,6 @@
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
-// const withdrawalRoutes = require("./routes/withdrawal");
-const adminRoutes = require("./routes/admin");
 const transactionRoutes = require("./routes/transaction");
 const exchangeRoutes = require("./routes/exchange");
 const adRoutes = require("./routes/ad");
@@ -26,11 +24,9 @@ mongoose
   .connect(process.env.MONGO_URI)
   .then(() => console.log("MongoDB Connected"));
 
-seedVoucherOptions();
+await seedVoucherOptions();
 
 app.use("/api/auth", require("./routes/auth"));
-// app.use("/api/withdrawal", withdrawalRoutes);
-app.use("/api/admin", adminRoutes);
 app.use("/api/transaction", transactionRoutes);
 app.use("/api/exchange", exchangeRoutes);
 app.use("/api/ad", adRoutes);
@@ -39,7 +35,6 @@ app.use("/api/daily-bonus", dailyBonusRoutes);
 
 app.use("/api/admin", require("./routes/adminRoutes"));
 app.use("/api/withdrawals", require("./routes/withdrawalRoutes"));
-
 app.use("/api/vouchers", require("./routes/voucherRoutes"));
 
 const PORT = process.env.PORT || 5000;
