@@ -555,6 +555,7 @@ router.post("/google-login", async (req, res) => {
       email: user.email,
       userId: user.userId,
       coins: user.coins,
+      role: user.role,
       referralCode: user.referralCode,
     });
   } catch (err) {
