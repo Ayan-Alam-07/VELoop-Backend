@@ -282,6 +282,7 @@ router.post("/login", async (req, res) => {
     email: user.email,
     userId: user.userId,
     coins: user.coins,
+    role: user.role,
     referralCode: user.referralCode,
   });
 });
@@ -483,6 +484,7 @@ router.post("/google-login", async (req, res) => {
         password: "google-auth",
         referralCode,
         coins: 0,
+        role: user.role,
         provider: "google",
       });
 
