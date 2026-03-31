@@ -187,6 +187,7 @@ router.post("/register", async (req, res) => {
       password: hashed,
       referralCode,
       coins: 0,
+      role: "user",
       provider: "email",
     });
 
@@ -484,7 +485,7 @@ router.post("/google-login", async (req, res) => {
         password: "google-auth",
         referralCode,
         coins: 0,
-        role: user.role,
+        role: "user",
         provider: "google",
       });
 
