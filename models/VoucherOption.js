@@ -5,6 +5,8 @@ const voucherOptionSchema = new mongoose.Schema(
     payoutType: {
       type: String,
       required: true,
+      lowercase: true,
+      trim: true,
       enum: ["upi", "google-play", "amazon", "paypal", "usdt", "btc"],
     },
     amount: {

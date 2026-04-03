@@ -27,8 +27,14 @@ app.use(express.json());
 
 mongoose
   .connect(process.env.MONGO_URI)
-  .then(() => console.log("MongoDB Connected"))
+  .then(async () => {
+    console.log("MongoDB Connected");
+
+    await seedVoucherOptions();
+  })
   .catch((err) => console.error("MongoDB Error:", err));
+// .then(() => console.log("MongoDB Connected"))
+// .catch((err) => console.error("MongoDB Error:", err));
 
 // await seedVoucherOptions();
 // seedVoucherOptions();
