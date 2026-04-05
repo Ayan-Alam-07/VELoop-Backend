@@ -47,6 +47,7 @@ app.use("/api/exchange", exchangeRoutes);
 app.use("/api/ad", adRoutes);
 app.use("/api/captcha", captchaRoutes);
 app.use("/api/daily-bonus", dailyBonusRoutes);
+app.use("/api/bonus", require("./routes/bonusRoutes"));
 
 app.use("/api/admin", require("./routes/adminRoutes"));
 app.use("/api/withdrawals", require("./routes/withdrawalRoutes"));
