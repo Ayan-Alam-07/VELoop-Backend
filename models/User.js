@@ -44,8 +44,14 @@ const userSchema = new mongoose.Schema(
 
     claimedBonuses: [
       {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "BonusReward",
+        rewardId: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "BonusReward",
+        },
+        claimedAt: {
+          type: Date,
+          default: Date.now,
+        },
       },
     ],
 
