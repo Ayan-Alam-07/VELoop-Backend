@@ -39,6 +39,17 @@ const userSchema = new mongoose.Schema(
     },
 
     // =====================
+    // Bouns
+    // =====================
+
+    claimedBonuses: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "BonusReward",
+      },
+    ],
+
+    // =====================
     // REFERRAL SYSTEM
     // =====================
 

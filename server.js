@@ -12,6 +12,7 @@ const adRoutes = require("./routes/ad");
 const captchaRoutes = require("./routes/captchaRoutes");
 const dailyBonusRoutes = require("./routes/dailyBonus");
 const seedVoucherOptions = require("./config/seedVoucherOptions");
+const seedBonusRewards = require("./config/seedBonusRewards");
 
 require("dotenv").config();
 
@@ -31,6 +32,7 @@ mongoose
     console.log("MongoDB Connected");
 
     await seedVoucherOptions();
+    await seedBonusRewards();
   })
   .catch((err) => console.error("MongoDB Error:", err));
 // .then(() => console.log("MongoDB Connected"))
