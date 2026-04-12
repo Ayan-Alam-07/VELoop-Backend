@@ -16,6 +16,7 @@ const dailyBonusRoutes = require("./routes/dailyBonus");
 const seedVoucherOptions = require("./config/seedVoucherOptions");
 const seedBonusRewards = require("./config/seedBonusRewards");
 const dailyCheckinRoutes = require("./routes/dailyCheckinRoutes");
+const seedDailyCheckinRewards = require("./config/seedDailyCheckinRewards");
 
 require("dotenv").config();
 // dotenv.config();
@@ -37,6 +38,7 @@ mongoose
 
     await seedVoucherOptions();
     await seedBonusRewards();
+    await seedDailyCheckinRewards();
   })
   .catch((err) => console.error("MongoDB Error:", err));
 // .then(() => console.log("MongoDB Connected"))

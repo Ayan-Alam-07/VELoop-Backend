@@ -179,7 +179,7 @@
 
 const DailyCheckinReward = require("../models/DailyCheckinReward");
 const User = require("../models/User");
-const { getCurrentStreakDay } = require("../utils/streakUtils");
+// const { getCurrentStreakDay } = require("../utils/streakUtils");
 
 const getDailyCheckinRewards = async (req, res) => {
   try {
