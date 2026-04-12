@@ -39,6 +39,27 @@ const userSchema = new mongoose.Schema(
     },
 
     // =====================
+    // Daily Checkin streak
+    // =====================
+
+    dailyCheckinStreak: {
+      type: Number,
+      default: 0,
+    },
+    lastDailyCheckin: {
+      type: Date,
+      default: null,
+    },
+    nextDailyCheckinAt: {
+      type: Date,
+      default: null,
+    },
+    claimedCheckinDays: {
+      type: [Number],
+      default: [],
+    },
+
+    // =====================
     // Bouns
     // =====================
 
