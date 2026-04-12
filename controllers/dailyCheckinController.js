@@ -181,13 +181,53 @@ const DailyCheckinReward = require("../models/DailyCheckinReward");
 const User = require("../models/User");
 const { getCurrentStreakDay } = require("../utils/streakUtils");
 
+// const getDailyCheckinRewards = async (req, res) => {
+//   try {
+//     const rewards = await DailyCheckinReward.find().sort({ day: 1 });
+
+//     return res.status(200).json({
+//       success: true,
+//       rewards,
+//     });
+//   } catch (error) {
+//     return res.status(500).json({
+//       success: false,
+//       message: error.message,
+//     });
+//   }
+// };
 const getDailyCheckinRewards = async (req, res) => {
   try {
+    const user = await User.findById(req.user.id);
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
     const rewards = await DailyCheckinReward.find().sort({ day: 1 });
+
+    const currentDay =
+      user.dailyCheckinStreak >= 7 ? 1 : user.dailyCheckinStreak + 1;
+
+    const rewardsWithStatus = rewards.map((reward) => ({
+      ...reward._doc,
+      isClaimed: user.claimedCheckinDays?.includes(reward.day) || false,
+      isCurrent:
+        reward.day === currentDay &&
+        !(user.claimedCheckinDays?.includes(reward.day) || false),
+      isLocked: reward.day > currentDay,
+    }));
 
     return res.status(200).json({
       success: true,
-      rewards,
+      rewards: rewardsWithStatus,
+      currentDay,
+      streakDay: user.dailyCheckinStreak || 0,
+      claimedDays: user.claimedCheckinDays || [],
+      nextClaimAt: user.nextDailyCheckinAt || null,
     });
   } catch (error) {
     return res.status(500).json({
@@ -359,10 +399,13 @@ const claimDailyCheckin = async (req, res) => {
     return res.status(200).json({
       success: true,
       message: "Reward claimed successfully",
-      streakDay,
       reward,
-      claimedDays: user.claimedCheckinDays,
+      streakDay: user.dailyCheckinStreak,
+      currentDay:
+        user.dailyCheckinStreak >= 7 ? 1 : user.dailyCheckinStreak + 1,
+      claimedDays: user.claimedCheckinDays || [],
       nextClaimAt: user.nextDailyCheckinAt,
+      isClaimed: true,
       coins: user.coins,
     });
   } catch (error) {
