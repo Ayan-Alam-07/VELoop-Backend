@@ -28,7 +28,7 @@ const seedDailyCheckinRewards = async () => {
         day: 3,
         reward: "15 VEs",
         type: "coin",
-        value: "+20",
+        value: "+15",
       },
       {
         day: 4,
@@ -46,7 +46,7 @@ const seedDailyCheckinRewards = async () => {
         day: 6,
         reward: "30 VEs",
         type: "coin",
-        value: "+40",
+        value: "+30",
       },
       {
         day: 7,
