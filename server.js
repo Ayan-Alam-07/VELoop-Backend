@@ -17,6 +17,7 @@ const seedVoucherOptions = require("./config/seedVoucherOptions");
 const seedBonusRewards = require("./config/seedBonusRewards");
 const dailyCheckinRoutes = require("./routes/dailyCheckinRoutes");
 const seedDailyCheckinRewards = require("./config/seedDailyCheckinRewards");
+const spinRoutes = require("./routes/spinRoutes");
 
 require("dotenv").config();
 // dotenv.config();
@@ -55,6 +56,7 @@ app.use("/api/captcha", captchaRoutes);
 app.use("/api/daily-bonus", dailyBonusRoutes);
 app.use("/api/bonus", require("./routes/bonusRoutes"));
 app.use("/api/daily-checkin", dailyCheckinRoutes);
+app.use("/api/spin", spinRoutes);
 
 app.use("/api/admin", require("./routes/adminRoutes"));
 app.use("/api/withdrawals", require("./routes/withdrawalRoutes"));
