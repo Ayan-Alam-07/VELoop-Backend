@@ -126,20 +126,21 @@ const spinSchema = new mongoose.Schema(
       type: [spinRewardSchema],
       default: [
         {
-          title: "5 VEs",
-          rewardType: "VE",
-          value: "5",
-          probability: 22,
-          color: "#4F46E5",
-          icon: "💎",
-        },
-        {
           title: "8 VEs",
           rewardType: "VE",
           value: "8",
           probability: 18,
           color: "#7C3AED",
           icon: "💠",
+        },
+        {
+          title: "5 VEs",
+          rewardType: "VE",
+          value: "5",
+          probability: 22,
+          color: "#e955ee",
+          // color: "#4F46E5",
+          icon: "💎",
         },
         {
           title: "12 VEs",
