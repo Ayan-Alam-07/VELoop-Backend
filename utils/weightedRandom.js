@@ -1,19 +1,20 @@
-// utils/weightedRandom.js
-
-const weightedRandom = (items) => {
-  const totalWeight = items.reduce((sum, item) => sum + item.probability, 0);
+const weightedRandom = (rewards) => {
+  const totalWeight = rewards.reduce(
+    (sum, reward) => sum + reward.probability,
+    0,
+  );
 
   let random = Math.random() * totalWeight;
 
-  for (const item of items) {
-    if (random < item.probability) {
-      return item;
-    }
+  for (const reward of rewards) {
+    random -= reward.probability;
 
-    random -= item.probability;
+    if (random <= 0) {
+      return reward;
+    }
   }
 
-  return items[0];
+  return rewards[0];
 };
 
-module.exports = { weightedRandom };
+module.exports = weightedRandom;

@@ -60,6 +60,46 @@ const userSchema = new mongoose.Schema(
     },
 
     // =====================
+    // Spin the Wheel
+    // =====================
+
+    availableSpins: {
+      type: Number,
+      default: 1,
+    },
+    totalSpinsPlayed: {
+      type: Number,
+      default: 0,
+    },
+
+    rewardHistory: [
+      {
+        rewardId: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "SpinReward",
+        },
+        title: String,
+        type: String,
+        amount: Number,
+        icon: String,
+        color: String,
+        rewardedAt: {
+          type: Date,
+          default: Date.now,
+        },
+      },
+    ],
+
+    // =====================
+    // Level
+    // =====================
+
+    xp: {
+      type: Number,
+      default: 0,
+    },
+
+    // =====================
     // Bouns
     // =====================
 

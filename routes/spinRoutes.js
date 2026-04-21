@@ -12,7 +12,7 @@ const {
 } = require("../controllers/spinController");
 
 router.get("/details", authMiddleware, getSpinDetails);
-router.post("/watch-ad", authMiddleware, watchSpinAd);
+// router.post("/watch-ad", authMiddleware, watchSpinAd);
 router.post("/play", authMiddleware, playSpin);
 
 module.exports = router;
