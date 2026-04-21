@@ -31,7 +31,7 @@ const seedSpinRewards = async () => {
       {
         title: "30 VEs",
         type: "coins",
-        amount: 35,
+        amount: 30,
         color: "#8b28e7",
         icon: "👑",
         probability: 5,
