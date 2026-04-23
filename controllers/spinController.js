@@ -28,6 +28,7 @@ const getSpinDetails = async (req, res) => {
         totalSpinsPlayed: user.totalSpinsPlayed,
         coins: user.coins,
         xp: user.xp,
+        gems: user.gems,
         rewardHistory: user.rewardHistory.slice(0, 10),
         rewards,
       },
@@ -113,6 +114,7 @@ const playSpin = async (req, res) => {
         totalSpinsPlayed: user.totalSpinsPlayed,
         coins: user.coins,
         xp: user.xp,
+        gems: user.gems,
       },
     });
   } catch (error) {
