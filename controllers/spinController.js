@@ -72,7 +72,18 @@ const playSpin = async (req, res) => {
       });
     }
 
+    console.log("Active Rewards:", activeRewards);
+
     const selectedReward = weightedRandom(activeRewards);
+
+    if (!selectedReward) {
+      console.log("❌ No reward selected");
+      return res.status(500).json({
+        success: false,
+        message: "Failed to select reward",
+      });
+    }
+    console.log("Selected Reward:", selectedReward);
 
     user.availableSpins -= 1;
     user.totalSpinsPlayed += 1;
