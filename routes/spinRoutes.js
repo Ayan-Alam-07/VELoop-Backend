@@ -5,14 +5,9 @@ const router = express.Router();
 
 const authMiddleware = require("../middleware/authMiddleware");
 
-const {
-  getSpinDetails,
-  watchSpinAd,
-  playSpin,
-} = require("../controllers/spinController");
+const { getSpinDetails, playSpin } = require("../controllers/spinController");
 
 router.get("/details", authMiddleware, getSpinDetails);
-// router.post("/watch-ad", authMiddleware, watchSpinAd);
 router.post("/play", authMiddleware, playSpin);
 
 module.exports = router;

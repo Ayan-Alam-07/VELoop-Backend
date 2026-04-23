@@ -78,11 +78,13 @@ const playSpin = async (req, res) => {
     user.totalSpinsPlayed += 1;
 
     if (selectedReward.type === "coins") {
-      user.coins += selectedReward.amount;
+      // user.coins += selectedReward.amount;
+      user.coins = (user.coins || 0) + selectedReward.amount;
     }
 
     if (selectedReward.type === "xp") {
-      user.xp += selectedReward.amount;
+      // user.xp += selectedReward.amount;
+      user.xp = (user.xp || 0) + selectedReward.amount;
     }
 
     if (selectedReward.type === "free_spin") {
@@ -90,7 +92,7 @@ const playSpin = async (req, res) => {
     }
 
     if (selectedReward.type === "gems") {
-      user.gems += selectedReward.amount;
+      user.gems = (user.gems || 0) + selectedReward.amount;
     }
 
     user.rewardHistory.unshift({
