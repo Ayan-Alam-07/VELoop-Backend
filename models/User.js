@@ -72,23 +72,43 @@ const userSchema = new mongoose.Schema(
       default: 0,
     },
 
-    rewardHistory: [
-      {
-        rewardId: {
-          type: mongoose.Schema.Types.ObjectId,
-          ref: "SpinReward",
+    // rewardHistory: [
+    //   {
+    //     rewardId: {
+    //       type: mongoose.Schema.Types.ObjectId,
+    //       ref: "SpinReward",
+    //     },
+    //     title: String,
+    //     type: String,
+    //     amount: Number,
+    //     icon: String,
+    //     color: String,
+    //     rewardedAt: {
+    //       type: Date,
+    //       default: Date.now,
+    //     },
+    //   },
+    // ],
+    rewardHistory: {
+      type: [
+        {
+          rewardId: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "SpinReward",
+          },
+          title: String,
+          type: String,
+          amount: Number,
+          icon: String,
+          color: String,
+          rewardedAt: {
+            type: Date,
+            default: Date.now,
+          },
         },
-        title: String,
-        type: String,
-        amount: Number,
-        icon: String,
-        color: String,
-        rewardedAt: {
-          type: Date,
-          default: Date.now,
-        },
-      },
-    ],
+      ],
+      default: [],
+    },
 
     // =====================
     // Level

@@ -41,10 +41,111 @@ const getSpinDetails = async (req, res) => {
   }
 };
 
+// const playSpin = async (req, res) => {
+//   try {
+//     const userId = req.user.id;
+
+//     const user = await User.findById(userId);
+
+//     if (!user) {
+//       return res.status(404).json({
+//         success: false,
+//         message: "User not found",
+//       });
+//     }
+
+//     if (user.availableSpins <= 0) {
+//       return res.status(400).json({
+//         success: false,
+//         message: "No spins left",
+//       });
+//     }
+
+//     const activeRewards = await SpinReward.find({
+//       isActive: true,
+//     }).sort({ order: 1 });
+
+//     if (!activeRewards.length) {
+//       return res.status(400).json({
+//         success: false,
+//         message: "No rewards found",
+//       });
+//     }
+
+//     console.log("Active Rewards:", activeRewards);
+
+//     const selectedReward = weightedRandom(activeRewards);
+
+//     if (!selectedReward) {
+//       console.log("❌ No reward selected");
+//       return res.status(500).json({
+//         success: false,
+//         message: "Failed to select reward",
+//       });
+//     }
+//     console.log("Selected Reward:", selectedReward);
+
+//     user.availableSpins -= 1;
+//     user.totalSpinsPlayed += 1;
+
+//     if (selectedReward.type === "coins") {
+//       // user.coins += selectedReward.amount;
+//       user.coins = (user.coins || 0) + selectedReward.amount;
+//     }
+
+//     if (selectedReward.type === "xp") {
+//       // user.xp += selectedReward.amount;
+//       user.xp = (user.xp || 0) + selectedReward.amount;
+//     }
+
+//     if (selectedReward.type === "free_spin") {
+//       user.availableSpins += selectedReward.amount;
+//     }
+
+//     if (selectedReward.type === "gems") {
+//       user.gems = (user.gems || 0) + selectedReward.amount;
+//     }
+
+//     user.rewardHistory.unshift({
+//       rewardId: selectedReward._id,
+//       title: selectedReward.title,
+//       type: selectedReward.type,
+//       amount: selectedReward.amount,
+//       icon: selectedReward.icon,
+//       color: selectedReward.color,
+//       rewardedAt: new Date(),
+//     });
+
+//     await user.save();
+
+//     return res.status(200).json({
+//       success: true,
+//       message: "Spin completed successfully",
+//       data: {
+//         reward: selectedReward,
+//         availableSpins: user.availableSpins,
+//         totalSpinsPlayed: user.totalSpinsPlayed,
+//         coins: user.coins,
+//         xp: user.xp,
+//         gems: user.gems,
+//       },
+//     });
+//   } catch (error) {
+//     console.log("playSpin error:", error);
+//     return res.status(500).json({
+//       success: false,
+//       message: error.message,
+//     });
+//   }
+// };
+
+const User = require("../models/User");
+const SpinReward = require("../models/SpinReward");
+const weightedRandom = require("../utils/weightedRandom");
+
 const playSpin = async (req, res) => {
   try {
     const userId = req.user.id;
-
     const user = await User.findById(userId);
 
     if (!user) {
@@ -54,6 +155,15 @@ const playSpin = async (req, res) => {
       });
     }
 
+    user.availableSpins = Number(user.availableSpins ?? 0);
+    user.totalSpinsPlayed = Number(user.totalSpinsPlayed ?? 0);
+    user.coins = Number(user.coins ?? 0);
+    user.xp = Number(user.xp ?? 0);
+    user.gems = Number(user.gems ?? 0);
+    user.rewardHistory = Array.isArray(user.rewardHistory)
+      ? user.rewardHistory
+      : [];
+
     if (user.availableSpins <= 0) {
       return res.status(400).json({
         success: false,
@@ -61,9 +171,9 @@ const playSpin = async (req, res) => {
       });
     }
 
-    const activeRewards = await SpinReward.find({
-      isActive: true,
-    }).sort({ order: 1 });
+    const activeRewards = await SpinReward.find({ isActive: true }).sort({
+      order: 1,
+    });
 
     if (!activeRewards.length) {
       return res.status(400).json({
@@ -72,38 +182,32 @@ const playSpin = async (req, res) => {
       });
     }
 
-    console.log("Active Rewards:", activeRewards);
-
     const selectedReward = weightedRandom(activeRewards);
 
     if (!selectedReward) {
-      console.log("❌ No reward selected");
       return res.status(500).json({
         success: false,
         message: "Failed to select reward",
       });
     }
-    console.log("Selected Reward:", selectedReward);
 
     user.availableSpins -= 1;
     user.totalSpinsPlayed += 1;
 
     if (selectedReward.type === "coins") {
-      // user.coins += selectedReward.amount;
-      user.coins = (user.coins || 0) + selectedReward.amount;
+      user.coins += Number(selectedReward.amount || 0);
     }
 
     if (selectedReward.type === "xp") {
-      // user.xp += selectedReward.amount;
-      user.xp = (user.xp || 0) + selectedReward.amount;
+      user.xp += Number(selectedReward.amount || 0);
     }
 
     if (selectedReward.type === "free_spin") {
-      user.availableSpins += selectedReward.amount;
+      user.availableSpins += Number(selectedReward.amount || 0);
     }
 
     if (selectedReward.type === "gems") {
-      user.gems = (user.gems || 0) + selectedReward.amount;
+      user.gems += Number(selectedReward.amount || 0);
     }
 
     user.rewardHistory.unshift({
@@ -131,11 +235,17 @@ const playSpin = async (req, res) => {
       },
     });
   } catch (error) {
+    console.log("playSpin error:", error);
     return res.status(500).json({
       success: false,
       message: error.message,
     });
   }
+};
+
+module.exports = {
+  getSpinDetails,
+  playSpin,
 };
 
 module.exports = {
