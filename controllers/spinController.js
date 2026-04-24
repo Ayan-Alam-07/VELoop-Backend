@@ -139,10 +139,6 @@ const getSpinDetails = async (req, res) => {
 //   }
 // };
 
-const User = require("../models/User");
-const SpinReward = require("../models/SpinReward");
-const weightedRandom = require("../utils/weightedRandom");
-
 const playSpin = async (req, res) => {
   try {
     const userId = req.user.id;
