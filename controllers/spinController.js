@@ -370,11 +370,25 @@ const playSpin = async (req, res) => {
 
     await user.save();
 
+    // return res.status(200).json({
+    //   success: true,
+    //   message: "Spin completed successfully",
+    //   data: {
+    //     reward: user.currentSpinReward,
+    //     availableSpins: user.availableSpins,
+    //     totalSpinsPlayed: user.totalSpinsPlayed,
+    //     coins: user.coins,
+    //     xp: user.xp,
+    //     gems: user.gems,
+    //   },
+    // });
+
     return res.status(200).json({
       success: true,
       message: "Spin completed successfully",
       data: {
         reward: user.currentSpinReward,
+        rewardOrder: selectedReward.order,
         availableSpins: user.availableSpins,
         totalSpinsPlayed: user.totalSpinsPlayed,
         coins: user.coins,
