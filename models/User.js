@@ -72,6 +72,38 @@ const userSchema = new mongoose.Schema(
       default: 0,
     },
 
+    currentSpinReward: {
+      rewardId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "SpinReward",
+        default: null,
+      },
+      title: {
+        type: String,
+        default: null,
+      },
+      rewardType: {
+        type: String,
+        default: null,
+      },
+      amount: {
+        type: Number,
+        default: 0,
+      },
+      icon: {
+        type: String,
+        default: null,
+      },
+      color: {
+        type: String,
+        default: null,
+      },
+      wonAt: {
+        type: Date,
+        default: null,
+      },
+    },
+
     rewardHistory: {
       type: [
         {
