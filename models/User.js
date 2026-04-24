@@ -72,23 +72,6 @@ const userSchema = new mongoose.Schema(
       default: 0,
     },
 
-    // rewardHistory: [
-    //   {
-    //     rewardId: {
-    //       type: mongoose.Schema.Types.ObjectId,
-    //       ref: "SpinReward",
-    //     },
-    //     title: String,
-    //     type: String,
-    //     amount: Number,
-    //     icon: String,
-    //     color: String,
-    //     rewardedAt: {
-    //       type: Date,
-    //       default: Date.now,
-    //     },
-    //   },
-    // ],
     rewardHistory: {
       type: [
         {
@@ -96,11 +79,21 @@ const userSchema = new mongoose.Schema(
             type: mongoose.Schema.Types.ObjectId,
             ref: "SpinReward",
           },
-          title: String,
-          type: String,
-          amount: Number,
-          icon: String,
-          color: String,
+          title: {
+            type: String,
+          },
+          type: {
+            type: String,
+          },
+          amount: {
+            type: Number,
+          },
+          icon: {
+            type: String,
+          },
+          color: {
+            type: String,
+          },
           rewardedAt: {
             type: Date,
             default: Date.now,

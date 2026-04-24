@@ -210,6 +210,20 @@ const playSpin = async (req, res) => {
       user.gems += Number(selectedReward.amount || 0);
     }
 
+    // user.rewardHistory.unshift({
+    //   rewardId: selectedReward._id,
+    //   title: selectedReward.title,
+    //   type: selectedReward.type,
+    //   amount: selectedReward.amount,
+    //   icon: selectedReward.icon,
+    //   color: selectedReward.color,
+    //   rewardedAt: new Date(),
+    // });
+
+    user.rewardHistory = Array.isArray(user.rewardHistory)
+      ? user.rewardHistory
+      : [];
+
     user.rewardHistory.unshift({
       rewardId: selectedReward._id,
       title: selectedReward.title,
@@ -221,6 +235,12 @@ const playSpin = async (req, res) => {
     });
 
     await user.save();
+
+    console.log(
+      "rewardHistory schema path =",
+      User.schema.path("rewardHistory"),
+    );
+    console.log("rewardHistory value =", user.rewardHistory);
 
     return res.status(200).json({
       success: true,
