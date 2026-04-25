@@ -6,6 +6,8 @@ const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
 
+const runMigration = require("./migrations/001_add_level_fields");
+
 const transactionRoutes = require("./routes/transaction");
 const exchangeRoutes = require("./routes/exchange");
 const adRoutes = require("./routes/ad");
@@ -37,6 +39,8 @@ mongoose
   .connect(process.env.MONGO_URI)
   .then(async () => {
     console.log("MongoDB Connected");
+
+    await runMigration();
 
     await seedVoucherOptions();
     await seedBonusRewards();
