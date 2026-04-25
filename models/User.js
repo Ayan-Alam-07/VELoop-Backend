@@ -139,10 +139,15 @@ const userSchema = new mongoose.Schema(
     // Level
     // =====================
 
-    xp: {
-      type: Number,
-      default: 0,
-    },
+    name: String,
+    // email: String,
+    // password: String,
+
+    xp: { type: Number, default: 0 },
+    level: { type: Number, default: 0 },
+
+    lastXPUpdate: Date,
+    dailyXP: { type: Number, default: 0 },
 
     // =====================
     // Bouns

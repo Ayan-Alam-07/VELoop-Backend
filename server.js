@@ -17,6 +17,9 @@ const dailyCheckinRoutes = require("./routes/dailyCheckinRoutes");
 const seedDailyCheckinRewards = require("./config/seedDailyCheckinRewards");
 const spinRoutes = require("./routes/spinRoutes");
 const seedSpinRewards = require("./config/spinRewardSeeder");
+const levelRoutes = require("./routes/levelRoutes");
+const xpRoutes = require("./routes/xpRoutes");
+const leaderboardRoutes = require("./routes/leaderboardRoutes");
 
 require("dotenv").config();
 
@@ -55,6 +58,10 @@ app.use("/api/spin", spinRoutes);
 app.use("/api/admin", require("./routes/adminRoutes"));
 app.use("/api/withdrawals", require("./routes/withdrawalRoutes"));
 app.use("/api/vouchers", require("./routes/voucherRoutes"));
+
+app.use("/api/level", levelRoutes);
+app.use("/api/xp", xpRoutes);
+app.use("/api/leaderboard", leaderboardRoutes);
 
 const PORT = process.env.PORT || 5000;
 
