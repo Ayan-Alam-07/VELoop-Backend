@@ -284,6 +284,7 @@ router.post("/login", async (req, res) => {
     userId: user.userId,
     coins: user.coins,
     role: user.role,
+    level: user.level,
     referralCode: user.referralCode,
   });
 });
@@ -556,6 +557,7 @@ router.post("/google-login", async (req, res) => {
       userId: user.userId,
       coins: user.coins,
       role: user.role,
+      level: user.level,
       referralCode: user.referralCode,
     });
   } catch (err) {

@@ -18,6 +18,7 @@ exports.getUsersSummary = async (req, res) => {
       gems: user.gems,
       totalAdsWatched: user.totalAdsWatched,
       todayAdsWatched: user.todayAdsWatched,
+      level: user.level,
     }));
 
     res.json(formattedUsers);
