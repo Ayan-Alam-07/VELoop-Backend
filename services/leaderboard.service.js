@@ -99,6 +99,7 @@ const getWeeklyLeaderboard = async (page, limit, currentUserId) => {
     coins: user.coins,
     xp: user.xp,
     weeklyCoinsEarned: user.weeklyCoinsEarned,
+    participated: isWeeklyLeaderboardParticipant,
   }));
 
   let currentUserRank = null;
