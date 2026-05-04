@@ -150,6 +150,26 @@ const userSchema = new mongoose.Schema(
     dailyXP: { type: Number, default: 0 },
 
     // =====================
+    // Leaderboard
+    // =====================
+
+    weeklyCoinsEarned: {
+      type: Number,
+      default: 0,
+      min: 0,
+      index: true,
+    },
+    isWeeklyLeaderboardParticipant: {
+      type: Boolean,
+      default: false,
+      index: true,
+    },
+    lastWeeklyParticipationAt: {
+      type: Date,
+      default: null,
+    },
+
+    // =====================
     // Bouns
     // =====================
 

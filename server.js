@@ -6,7 +6,8 @@ const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
 
-const runMigration = require("./migrations/001_add_level_fields");
+// const runMigration = require("./migrations/001_add_level_fields");
+const runMigrations = require("./migrations");
 
 const transactionRoutes = require("./routes/transaction");
 const exchangeRoutes = require("./routes/exchange");
@@ -21,7 +22,10 @@ const spinRoutes = require("./routes/spinRoutes");
 const seedSpinRewards = require("./config/spinRewardSeeder");
 const levelRoutes = require("./routes/levelRoutes");
 const xpRoutes = require("./routes/xpRoutes");
-const leaderboardRoutes = require("./routes/leaderboardRoutes");
+const leaderboardRoutes = require("./routes/leaderboard.routes");
+const {
+  startLeaderboardScheduler,
+} = require("./services/leaderboardScheduler.service");
 
 require("dotenv").config();
 
@@ -40,12 +44,14 @@ mongoose
   .then(async () => {
     console.log("MongoDB Connected");
 
-    await runMigration();
+    // await runMigration();
+    await runMigrations();
 
     await seedVoucherOptions();
     await seedBonusRewards();
     await seedDailyCheckinRewards();
     await seedSpinRewards();
+    startLeaderboardScheduler();
   })
   .catch((err) => console.error("MongoDB Error:", err));
 
