@@ -13,8 +13,11 @@ const joinWeeklyLeaderboard = async (userId) => {
   try {
     const user = await User.findById(userId).session(session);
 
+    console.log("🔍 Found user:", user);
+
     if (!user) {
-      throw new AppError("User not found", 404);
+      console.log("❌ joinWeeklyLeaderboard: User not found for ID:", userId);
+      throw new AppError("Invalid session. Please login again.", 401);
     }
 
     if (user.coins < LEADERBOARD.PARTICIPATION_FEE_COINS) {

@@ -3,7 +3,8 @@ const { successResponse } = require("../utils/apiResponse");
 
 const joinLeaderboard = async (req, res, next) => {
   try {
-    const user = await leaderboardService.joinWeeklyLeaderboard(req.user._id);
+    // const user = await leaderboardService.joinWeeklyLeaderboard(req.user._id);
+    const user = await leaderboardService.joinWeeklyLeaderboard(req.user.id);
 
     return successResponse(res, 200, "Joined weekly leaderboard successfully", {
       userId: user.userId,
@@ -26,6 +27,7 @@ const getLeaderboard = async (req, res, next) => {
       page,
       limit,
       req.user._id,
+      // req.user.id,
     );
 
     return successResponse(
