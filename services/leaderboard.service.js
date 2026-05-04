@@ -122,6 +122,7 @@ const getWeeklyLeaderboard = async (page, limit, currentUserId) => {
       weeklyCoinsEarned: currentUser.weeklyCoinsEarned,
       xp: currentUser.xp,
       coins: currentUser.coins,
+      participated: currentUser.isWeeklyLeaderboardParticipant,
     };
   }
 
