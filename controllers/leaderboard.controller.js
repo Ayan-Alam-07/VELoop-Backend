@@ -26,8 +26,8 @@ const getLeaderboard = async (req, res, next) => {
     const data = await leaderboardService.getWeeklyLeaderboard(
       page,
       limit,
-      req.user._id,
-      // req.user.id,
+      // req.user._id,
+      req.user.id,
     );
 
     return successResponse(

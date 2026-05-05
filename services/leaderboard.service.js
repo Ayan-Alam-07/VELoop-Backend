@@ -70,6 +70,7 @@ const joinWeeklyLeaderboard = async (userId) => {
 };
 
 const getWeeklyLeaderboard = async (page, limit, currentUserId) => {
+  console.log("➡️ currentUserId:", currentUserId);
   const skip = (page - 1) * limit;
 
   const query = {
@@ -84,14 +85,23 @@ const getWeeklyLeaderboard = async (page, limit, currentUserId) => {
       .limit(limit)
       .lean(),
     User.countDocuments(query),
+    // currentUserId
+    //   ? User.findById(currentUserId)
+    //       .select(
+    //         "userId weeklyCoinsEarned xp coins isWeeklyLeaderboardParticipant",
+    //       )
+    //       .lean()
+    //   : null,
     currentUserId
-      ? User.findById(currentUserId)
+      ? User.findOne({ _id: currentUserId }) // 🔥 safer than findById
           .select(
             "userId weeklyCoinsEarned xp coins isWeeklyLeaderboardParticipant",
           )
           .lean()
       : null,
   ]);
+
+  console.log("🔍 currentUser:", currentUser);
 
   const rankedUsers = users.map((user, index) => ({
     rank: skip + index + 1,
