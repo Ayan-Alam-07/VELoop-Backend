@@ -6,9 +6,8 @@ const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
 
-// const runMigration = require("./migrations/001_add_level_fields");
 const runMigrations = require("./migrations");
-
+const errorMiddleware = require("./middleware/error.middleware");
 const transactionRoutes = require("./routes/transaction");
 const exchangeRoutes = require("./routes/exchange");
 const adRoutes = require("./routes/ad");
@@ -72,6 +71,8 @@ app.use("/api/vouchers", require("./routes/voucherRoutes"));
 app.use("/api/level", levelRoutes);
 app.use("/api/xp", xpRoutes);
 app.use("/api/leaderboard", leaderboardRoutes);
+
+app.use(errorMiddleware);
 
 const PORT = process.env.PORT || 5000;
 
