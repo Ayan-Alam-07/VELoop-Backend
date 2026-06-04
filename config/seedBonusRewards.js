@@ -3,6 +3,7 @@
 const BonusReward = require("../models/BonusReward");
 
 const bonusRewards = [
+  { reqWatch: 0, bonusCoin: 5 },
   { reqWatch: 1, bonusCoin: 10 },
   { reqWatch: 5, bonusCoin: 35 },
   { reqWatch: 10, bonusCoin: 75 },
