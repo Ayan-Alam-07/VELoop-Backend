@@ -32,7 +32,12 @@ const app = express();
 
 app.use(
   cors({
-    origin: ["http://localhost:5173", "https://velooprewards.vercel.app"],
+    origin: [
+      "https://velooprewards.in",
+      "https://www.velooprewards.in",
+      "https://velooprewards.vercel.app",
+      "http://localhost:5173",
+    ],
     credentials: true,
   }),
 );
